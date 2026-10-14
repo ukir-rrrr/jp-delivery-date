@@ -1,38 +1,27 @@
-import { formatSlashDate, type LocalDate } from "../../calendar/local-date";
-import type {
-  CarrierAdapter,
-  ColumnSpec,
-  Issue,
-  Result,
-  Row,
-} from "../adapter";
+import { formatCompactDate } from "../../calendar/local-date";
+import { defineAdapter } from "../adapter";
+import { YUPACK_COLUMNS, YUPACK_SLOT_CODES } from "./columns";
+import { yupackPreview, yupackRow } from "./map-row";
 
-const COLUMNS: ColumnSpec[] = [
-  { order: 1, label: "お届け希望日", maxBytes: 10, required: false },
-];
+export { YUPACK_COLUMNS, YUPACK_R_SPEC, YUPACK_SLOT_CODES, YUPACK_TIME_SLOTS, yupackColumn, yupackHeader } from "./columns";
+export { yupackPreview, yupackRow } from "./map-row";
 
-export const yupackRAdapter: CarrierAdapter = {
+/**
+ * Yu-Print R import CSV. The merchant maps these headers in the import filter.
+ * Shift_JIS is one of the encodings the filter accepts. encodingVerified is
+ * false because UTF-8 is also documented.
+ */
+export const yupackRAdapter = defineAdapter({
   id: "yupackR",
-  columns: COLUMNS,
-  encoding: "utf8_bom",
-  mapSlot() {
-    return {
-      code: "unmapped",
-      message: "Yu-Print R slot mapping happens on the import side",
-    };
+  columns: YUPACK_COLUMNS,
+  encoding: "shift_jis",
+  encodingVerified: false,
+  mapSlot(slot) {
+    return YUPACK_SLOT_CODES[slot];
   },
-  formatDate(d: LocalDate) {
-    return formatSlashDate(d);
+  formatDate(date) {
+    return formatCompactDate(date);
   },
-  toRow(): Result<Row, Issue[]> {
-    return {
-      ok: false,
-      error: [
-        {
-          code: "not_implemented",
-          message: "Yu-Print R adapter lands in W5–6",
-        },
-      ],
-    };
-  },
-};
+  mapRow: yupackRow,
+  preview: yupackPreview,
+});

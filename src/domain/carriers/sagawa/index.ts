@@ -1,46 +1,27 @@
-import { formatCompactDate, type LocalDate } from "../../calendar/local-date";
-import type { Slot } from "../../delivery/slot";
-import type {
-  CarrierAdapter,
-  ColumnSpec,
-  Issue,
-  Result,
-  Row,
-} from "../adapter";
+import { formatCompactDate } from "../../calendar/local-date";
+import { defineAdapter } from "../adapter";
+import { SAGAWA_COLUMNS, SAGAWA_SLOT_CODES } from "./columns";
+import { sagawaPreview, sagawaRow } from "./map-row";
 
-/** Sagawa e-Hiden III slot codes. Map each code from the PDF only (W5). */
-const SLOT_MAP: Record<Slot, string> = {
-  unspecified: "",
-  morning: "01",
-  afternoon_early: "12",
-  afternoon_late: "14",
-  evening: "16",
-  night: "18",
-};
+export { SAGAWA_COLUMNS, SAGAWA_EHIDEN_SPEC, SAGAWA_SLOT_CODES, SAGAWA_TIME_SLOTS, sagawaColumn, sagawaHeader } from "./columns";
+export { sagawaPreview, sagawaRow } from "./map-row";
 
-const COLUMNS: ColumnSpec[] = [
-  { order: 1, label: "出荷日", maxBytes: 8, required: true },
-];
-
-export const sagawaAdapter: CarrierAdapter = {
+/**
+ * e飛伝III 標準_飛脚宅配便_CSV_ヘッダ有.
+ * Import encoding is not named in the manual (see SAGAWA_EHIDEN_SPEC), so
+ * this adapter writes Shift_JIS and leaves encodingVerified false.
+ */
+export const sagawaAdapter = defineAdapter({
   id: "sagawa",
-  columns: COLUMNS,
+  columns: SAGAWA_COLUMNS,
   encoding: "shift_jis",
-  mapSlot(s: Slot) {
-    return SLOT_MAP[s];
+  encodingVerified: false,
+  mapSlot(slot) {
+    return SAGAWA_SLOT_CODES[slot];
   },
-  formatDate(d: LocalDate) {
-    return formatCompactDate(d);
+  formatDate(date) {
+    return formatCompactDate(date);
   },
-  toRow(): Result<Row, Issue[]> {
-    return {
-      ok: false,
-      error: [
-        {
-          code: "not_implemented",
-          message: "Sagawa e-Hiden III adapter lands in W5",
-        },
-      ],
-    };
-  },
-};
+  mapRow: sagawaRow,
+  preview: sagawaPreview,
+});

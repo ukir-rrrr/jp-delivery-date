@@ -5,6 +5,7 @@ import { SLOTS } from "@domain/delivery/slot";
 import { SLOT_LABELS_JA } from "@domain/delivery/labels";
 import { adminLoadMessage } from "./admin-copy";
 import { useAdminLoading } from "./admin-feedback";
+import { EXPORT_CARRIERS } from "./export-carriers";
 
 export interface OrdersScreenRow {
   orderId: string;
@@ -25,6 +26,8 @@ export type OrdersPageData =
       ok: true;
       settingsStatus: "missing" | "ok" | "invalid";
       billingReady: boolean;
+      carrier: { id: string; label: string; button: string; note: string };
+      carrierError: string | null;
       dateError: string | null;
       justExported: boolean;
       filter: { status: string; deliveryDate: string; missingDate: boolean };
@@ -117,10 +120,15 @@ export function OrdersScreen({ data }: { data: OrdersPageData }) {
           設定画面で保存し直すまで、CSVは書き出せません。
         </s-banner>
       ) : null}
-      {!data.billingReady ? (
+      {data.carrier.id === "yamato" && !data.billingReady ? (
         <s-banner tone="warning" heading="ヤマトの請求先コード">
           発払いの送り状には、設定の「ご請求先顧客コード」と「運賃管理番号」が必要です。{" "}
           <s-link href="/app/settings">設定を開く</s-link>
+        </s-banner>
+      ) : null}
+      {data.carrierError ? (
+        <s-banner tone="warning" heading="運送会社">
+          {data.carrierError}
         </s-banner>
       ) : null}
       {data.justExported ? (
@@ -153,8 +161,9 @@ export function OrdersScreen({ data }: { data: OrdersPageData }) {
         <s-section heading="絞り込み">
           <s-paragraph>
             直近の注文を50件ずつ読み、その中から絞り込みます。キャンセル済みは含みません。
-            出荷予定日は書き出した日（日本時間）です。送り状種類は発払いです。
+            {data.carrier.note}
           </s-paragraph>
+          <input type="hidden" name="carrier" value={data.carrier.id} />
           <s-stack direction="inline" gap="base">
             <s-date-field
               label="配達希望日"
@@ -187,7 +196,27 @@ export function OrdersScreen({ data }: { data: OrdersPageData }) {
         </s-section>
       </Form>
 
-      <form method="post" action="/app/export/yamato" onSubmit={onExport}>
+      <Form method="get" action="/app/orders">
+        <s-section heading="運送会社">
+          <s-stack direction="inline" gap="base">
+            <s-select label="書き出すCSV" name="carrier">
+              {EXPORT_CARRIERS.map((carrier) => (
+                <s-option key={carrier.id} value={carrier.id} defaultSelected={data.carrier.id === carrier.id}>
+                  {carrier.label}
+                </s-option>
+              ))}
+            </s-select>
+            {data.filter.deliveryDate ? <input type="hidden" name="date" value={data.filter.deliveryDate} /> : null}
+            {data.filter.status !== "all" ? <input type="hidden" name="status" value={data.filter.status} /> : null}
+            {data.filter.missingDate ? <input type="hidden" name="missing" value="1" /> : null}
+            <s-button type="submit" variant="secondary" disabled={busy}>
+              この運送会社で見る
+            </s-button>
+          </s-stack>
+        </s-section>
+      </Form>
+
+      <form method="post" action={`/app/export/${data.carrier.id}`} onSubmit={onExport}>
         <s-section heading={`注文 ${data.rows.length}件（読み込み ${data.examined}件）`}>
           {data.rows.length === 0 ? (
             <s-paragraph>このページには、条件に合う注文がありません。</s-paragraph>
@@ -209,8 +238,12 @@ export function OrdersScreen({ data }: { data: OrdersPageData }) {
             </s-table>
           )}
           <s-stack direction="inline" gap="base">
-            <s-button type="submit" variant="primary" disabled={pending || data.rows.length === 0 || data.settingsStatus === "invalid"}>
-              {pending ? "書き出しています" : "ヤマトB2のCSVを書き出す"}
+            <s-button
+              type="submit"
+              variant="primary"
+              disabled={pending || data.rows.length === 0 || data.settingsStatus === "invalid" || data.carrierError !== null}
+            >
+              {pending ? "書き出しています" : data.carrier.button}
             </s-button>
             {data.pageInfo.hasNextPage && data.pageInfo.endCursor ? (
               <s-link href={nextHref(data)}>次の50件</s-link>
@@ -294,6 +327,7 @@ function OrderRow({ row }: { row: OrdersScreenRow }) {
 
 function nextHref(data: Extract<OrdersPageData, { ok: true }>): string {
   const params = new URLSearchParams();
+  if (data.carrier.id !== "yamato") params.set("carrier", data.carrier.id);
   if (data.filter.deliveryDate) params.set("date", data.filter.deliveryDate);
   if (data.filter.status !== "all") params.set("status", data.filter.status);
   if (data.filter.missingDate) params.set("missing", "1");
@@ -303,7 +337,7 @@ function nextHref(data: Extract<OrdersPageData, { ok: true }>): string {
 
 function filenameOf(header: string | null): string {
   const match = /filename="([\w.-]+)"/.exec(header ?? "");
-  return match?.[1] ?? "yamato-b2.csv";
+  return match?.[1] ?? "label.csv";
 }
 
 async function readExportError(response: Response): Promise<{

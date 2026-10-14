@@ -1,10 +1,11 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { jstDateTime } from "@domain/calendar/jst";
-import { buildYamatoFile, type YamatoFailure } from "@domain/carriers/yamato";
+import { buildLabelFile, carrierById, type LabelFailure } from "@domain/carriers";
 import { applyDeliveryEdit } from "@domain/order/apply-edit";
 import { normalizeDeliveryOrder } from "@domain/order/normalize-order";
 import { AdminApiError, loadSettings } from "@infra/graphql/admin";
 import { fetchOrdersByIds, orderToInput } from "@infra/orders/load-orders";
+import { findExportCarrier } from "../export-carriers";
 import { recordExportedOrders } from "../export-log.server";
 import { parseExportForm } from "../export-request";
 import { authenticate } from "../shopify.server";
@@ -16,9 +17,9 @@ import { authenticate } from "../shopify.server";
  */
 export const action = async ({ request, params }: ActionFunctionArgs) => {
   const { admin, session } = await authenticate.admin(request);
-  if (params.carrier !== "yamato") {
-    return text("this carrier is not implemented yet", 501);
-  }
+  const chosen = findExportCarrier(params.carrier);
+  const adapter = chosen ? carrierById(chosen.id) : undefined;
+  if (!chosen || !adapter) return text("this carrier is not implemented yet", 501);
   const parsed = parseExportForm(await request.formData());
   if (!parsed.ok) return problem(400, parsed.message);
 
@@ -60,17 +61,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     orders.push(order);
   }
 
-  const file = buildYamatoFile(orders, loaded.settings);
+  const file = buildLabelFile(adapter, orders, loaded.settings);
   if (!file.ok) return problem(422, "書き出せない行があります。日付・文字・住所の長さを確認してください。", file.error);
 
-  await recordExportedOrders(session.shop, "yamato", orders.map((order) => order.orderId));
+  await recordExportedOrders(session.shop, adapter.id, orders.map((order) => order.orderId));
   const body = new ArrayBuffer(file.value.byteLength);
   new Uint8Array(body).set(file.value);
   return new Response(body, {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=Shift_JIS",
-      "Content-Disposition": 'attachment; filename="yamato-b2.csv"',
+      "Content-Disposition": `attachment; filename="${chosen.fileName}"`,
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
     },
@@ -79,13 +80,13 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
-  if (params.carrier === "yamato") {
+  if (findExportCarrier(params.carrier)) {
     return text("CSVは注文一覧から書き出します。", 405);
   }
   return text("this carrier is not implemented yet", 501);
 };
 
-function problem(status: number, message: string, failures: YamatoFailure[] = []) {
+function problem(status: number, message: string, failures: LabelFailure[] = []) {
   return Response.json(
     {
       ok: false as const,

@@ -63,6 +63,7 @@ describe("orders loader", () => {
     expect(result.rows.map((row) => row.orderName)).toEqual(["#1002"]);
     expect(result.rows[0]?.issues.some((issue) => issue.code === "missing_delivery_date")).toBe(true);
     expect(result.rows[0]?.defaultSelected).toBe(false);
+    expect(result.carrier).toMatchObject({ id: "yamato" });
     expect(calls.some((call) => call.query.includes("email"))).toBe(false);
     expect(exportedMock).toHaveBeenCalledWith(
       "demo.myshopify.com",
@@ -86,6 +87,32 @@ describe("orders loader", () => {
     expect(result).toMatchObject({ ok: true, pcdRedacted: true });
     if (!result.ok) return;
     expect(result.rows[0]?.preview.every((line) => line.value === "" || line.label === "出荷予定日" || line.label === "お客様管理番号")).toBe(true);
+  });
+});
+
+describe("orders carrier", () => {
+  it("reviews the page with the selected carrier and logs that carrier only", async () => {
+    install(() => ({
+      data: {
+        currentAppInstallation: { metafield: { value: JSON.stringify(storedSettings) } },
+        orders: {
+          pageInfo: { hasNextPage: false, endCursor: null },
+          nodes: [datedNode()],
+        },
+      },
+    }));
+    const sagawa = await ordersLoader(args("/app/orders?carrier=sagawa"));
+    expect(sagawa).toMatchObject({ ok: true, carrier: { id: "sagawa" }, carrierError: null });
+    if (!sagawa.ok) return;
+    expect(sagawa.rows[0]?.preview).toContainEqual({ label: "配達日", value: "20261020" });
+    expect(sagawa.rows[0]?.preview).toContainEqual({ label: "配達指定時間帯", value: "01" });
+    expect(sagawa.rows[0]?.issues).toEqual([]);
+    expect(exportedMock).toHaveBeenCalledWith("demo.myshopify.com", "sagawa", ["gid://shopify/Order/1001"]);
+
+    const yupack = await ordersLoader(args("/app/orders?carrier=yupackR"));
+    if (!yupack.ok) return;
+    expect(yupack.rows[0]?.preview).toContainEqual({ label: "配達希望日", value: "20261020" });
+    expect(yupack.rows[0]?.preview).toContainEqual({ label: "配達時間帯区分", value: "51" });
   });
 });
 
@@ -169,7 +196,58 @@ describe("yamato export", () => {
     const yamato = await exportLoader(loaderArgs("/app/export/yamato", { carrier: "yamato" }));
     expect(yamato.status).toBe(405);
     const sagawa = await exportLoader(loaderArgs("/app/export/sagawa", { carrier: "sagawa" }));
-    expect(sagawa.status).toBe(501);
+    expect(sagawa.status).toBe(405);
+    const yupack = await exportLoader(loaderArgs("/app/export/yupackR", { carrier: "yupackR" }));
+    expect(yupack.status).toBe(405);
+    const unknown = await exportLoader(loaderArgs("/app/export/other", { carrier: "other" }));
+    expect(unknown.status).toBe(501);
+  });
+
+  it("writes a Sagawa file from the in-memory date edit", async () => {
+    install((_query, variables) => {
+      const ids = (variables?.ids as string[] | undefined) ?? [];
+      return {
+        data: {
+          currentAppInstallation: { metafield: { value: JSON.stringify(storedSettings) } },
+          nodes: ids.map((id) => ({ __typename: "Order", ...buyNowNode(), id })),
+        },
+      };
+    });
+    const form = new FormData();
+    form.set("orderId", "gid://shopify/Order/1002");
+    form.set("date:1002", "2026-10-20");
+    form.set("slot:1002", "morning");
+    const response = await exportAction(actionArgs(form, "sagawa"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Disposition")).toContain("sagawa-ehiden3.csv");
+    const text = iconv.decode(Buffer.from(await response.arrayBuffer()), "shiftjis");
+    expect(text).toContain("20261020");
+    expect(text).toContain("佐藤花");
+    expect(text).not.toContain("2026/10/20");
+    expect(recordMock.mock.calls[0]?.[1]).toBe("sagawa");
+  });
+
+  it("writes a Yu-Print R file with the official morning code", async () => {
+    install((_query, variables) => {
+      const ids = (variables?.ids as string[] | undefined) ?? [];
+      return {
+        data: {
+          currentAppInstallation: { metafield: { value: JSON.stringify(storedSettings) } },
+          nodes: ids.map((id) => ({ __typename: "Order", ...buyNowNode(), id })),
+        },
+      };
+    });
+    const form = new FormData();
+    form.set("orderId", "gid://shopify/Order/1002");
+    form.set("date:1002", "2026-10-20");
+    form.set("slot:1002", "morning");
+    const response = await exportAction(actionArgs(form, "yupackR"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Disposition")).toContain("yupack-r.csv");
+    const text = iconv.decode(Buffer.from(await response.arrayBuffer()), "shiftjis");
+    expect(text).toContain("20261020");
+    expect(text).toContain(",51,");
+    expect(recordMock.mock.calls[0]?.[1]).toBe("yupackR");
   });
 });
 
@@ -254,11 +332,11 @@ function loaderArgs(pathname: string, params: Record<string, string>): LoaderFun
   return { request, params, context: {}, pattern: pathname } as LoaderFunctionArgs;
 }
 
-function actionArgs(form: FormData): ActionFunctionArgs {
-  const request = new Request("https://example.com/app/export/yamato", { method: "POST", body: form });
+function actionArgs(form: FormData, carrier = "yamato"): ActionFunctionArgs {
+  const request = new Request(`https://example.com/app/export/${carrier}`, { method: "POST", body: form });
   return {
     request,
-    params: { carrier: "yamato" },
+    params: { carrier },
     context: {},
     pattern: "/app/export/:carrier",
   } as unknown as ActionFunctionArgs;
