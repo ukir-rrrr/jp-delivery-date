@@ -20,6 +20,8 @@ describe("src/domain purity", () => {
     for (const file of files) {
       const src = readFileSync(file, "utf8");
       expect(src, file).not.toMatch(FORBIDDEN);
+      expect(src, file).not.toMatch(/Date\.now\(/);
+      expect(src, file).not.toMatch(/new Date\(\)/);
     }
   });
 });

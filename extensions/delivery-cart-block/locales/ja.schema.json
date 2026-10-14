@@ -1,12 +1,16 @@
 {
   "block": {
     "cart_delivery": {
-      "name": "配達日時指定"
+      "name": "配達日時指定",
+      "required": "配達希望日を必須にする",
+      "required_info": "有効な日付と時間帯が選ばれるまで、カートのチェックアウトを押せなくします。今すぐ購入やエクスプレス決済はカートを経由しないため、この設定では止まりません。",
+      "show_prefecture": "都道府県の選択を表示する",
+      "show_prefecture_info": "未選択のときは、設定された地域日数のうち最も長い日数で最短日を計算します。"
     },
     "cart_drawer_embed": {
       "name": "配達日時指定（カートドロワー）",
       "selector": "カートドロワーのCSSセレクタ",
-      "selector_info": "Dawn の初期値は cart-drawer です。テーマに合わせて変更してください。"
+      "selector_info": "Dawn の初期値は cart-drawer です。Horizon など別テーマでは #CartDrawer や .cart-drawer に変えてください。"
     }
   }
 }

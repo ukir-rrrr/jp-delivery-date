@@ -1,12 +1,16 @@
 {
   "block": {
     "cart_delivery": {
-      "name": "Delivery date"
+      "name": "Delivery date",
+      "required": "Require a delivery date",
+      "required_info": "Checkout stays disabled until a valid date and time slot are chosen. Buy Now and express wallets skip the cart, so this setting does not stop them.",
+      "show_prefecture": "Show a prefecture selector",
+      "show_prefecture_info": "When no prefecture is selected, the earliest date uses the slowest configured region."
     },
     "cart_drawer_embed": {
       "name": "Delivery date (cart drawer)",
       "selector": "Cart drawer CSS selector",
-      "selector_info": "Dawn preset: cart-drawer. Change this if your theme uses a different drawer."
+      "selector_info": "Dawn preset: cart-drawer. For other themes try #CartDrawer or .cart-drawer."
     }
   }
 }

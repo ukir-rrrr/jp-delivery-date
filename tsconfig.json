@@ -1,6 +1,6 @@
 {
   "include": ["env.d.ts", "**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
-  "exclude": ["node_modules", "build", "extensions"],
+  "exclude": ["node_modules", "build"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "strict": true,
@@ -18,8 +18,9 @@
     "target": "ES2022",
     "baseUrl": ".",
     "paths": {
-      "@domain/*": ["src/domain/*"],
-      "@infra/*": ["src/infra/*"]
+    "@domain/*": ["src/domain/*"],
+    "@infra/*": ["src/infra/*"],
+    "@storefront/*": ["src/storefront/*"]
     },
     "types": [
       "@react-router/node",

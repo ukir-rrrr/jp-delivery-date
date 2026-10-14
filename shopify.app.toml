@@ -45,6 +45,7 @@ type = "number_integer"
 name = "出荷リードタイム（営業日）"
 description = "この商品の出荷準備に必要な営業日数。未設定は 0。"
 access.admin = "merchant_read_write"
+access.storefront = "public_read"
 
 # settings_v1 lives as one app-owned JSON metafield. Owner (AppInstallation vs Shop)
 # is unverified until Liquid access is spiked; AppInstallation app-data metafields
