@@ -2,9 +2,10 @@
   Shared picker for the cart block and the cart-drawer embed.
   No theme files are edited. Buy Now / dynamic checkout never renders this
   picker: those buttons skip the cart, so no delivery attributes are saved.
+  Settings are the app-data metafield namespace "delivery", key "settings_v1".
 {% endcomment %}
 {% liquid
-  assign delivery_settings = app.metafields.settings_v1.value
+  assign delivery_settings = app.metafields.delivery.settings_v1.value
 %}
 
 <div

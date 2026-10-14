@@ -10,9 +10,9 @@ automatically_update_urls_on_dev = true
 include_config_on_deploy = true
 
 [access_scopes]
-# Architecture: read_orders + read_products. Do not request read_all_orders.
-# write_products for app-owned product metafields is unverified [U]; omitted until confirmed.
-scopes = "read_orders,read_products"
+# read_orders + read_products. Do not request read_all_orders.
+# metafieldsSet on a product needs the same access as mutating the product.
+scopes = "read_orders,read_products,write_products"
 
 [webhooks]
 api_version = "2026-10"
@@ -47,6 +47,7 @@ description = "この商品の出荷準備に必要な営業日数。未設定�
 access.admin = "merchant_read_write"
 access.storefront = "public_read"
 
-# settings_v1 lives as one app-owned JSON metafield. Owner (AppInstallation vs Shop)
-# is unverified until Liquid access is spiked; AppInstallation app-data metafields
-# cannot be declared in this TOML file.
+# settings_v1 is the single app-data JSON metafield on the AppInstallation
+# (namespace "delivery", key "settings_v1"). The theme extension reads
+# app.metafields.delivery.settings_v1. App-data metafields cannot be declared
+# here, and the value is not mirrored onto the shop.
