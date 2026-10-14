@@ -19,10 +19,7 @@ function weekdayOf(date: LocalDate): Weekday {
 
 function isNewYearPresetDay(date: LocalDate): boolean {
   const monthDay = date.slice(5);
-  return (
-    monthDay >= "12-29" ||
-    monthDay <= "01-03"
-  );
+  return monthDay >= "12-29" || monthDay <= "01-03";
 }
 
 export function isClosedShipDay(
@@ -36,8 +33,9 @@ export function isClosedShipDay(
 }
 
 /**
- * Add `days` shipping business days. Never loops forever: if the horizon
- * is all-closed, returns null so callers can surface an empty selectable set.
+ * `days === 0`: first open ship day on or after `start`.
+ * `days > 0`: that origin plus N additional open ship days.
+ * Never loops forever: all-closed horizon returns null.
  */
 export function addBusinessDays(
   calendar: BusinessCalendar,
@@ -45,15 +43,17 @@ export function addBusinessDays(
   days: number,
   horizonDays = 366,
 ): LocalDate | null {
-  if (days <= 0) return start;
+  if (days < 0) {
+    throw new Error(`addBusinessDays: days must be >= 0, got ${days}`);
+  }
   let cursor = start;
   let remaining = days;
   for (let i = 0; i < horizonDays; i += 1) {
-    cursor = addCalendarDays(cursor, 1);
     if (!isClosedShipDay(calendar, cursor)) {
-      remaining -= 1;
       if (remaining === 0) return cursor;
+      remaining -= 1;
     }
+    cursor = addCalendarDays(cursor, 1);
   }
   return null;
 }

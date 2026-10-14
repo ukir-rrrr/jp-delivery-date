@@ -123,7 +123,16 @@ export function earliestDate(input: EarliestDateInput): EarliestDateResult {
     });
   }
 
-  const earliest = addCalendarDays(afterLead, regionDays);
+  const afterRegion = addCalendarDays(afterLead, regionDays);
+  const earliest = addBusinessDays(calendar, afterRegion, 0);
+  if (!earliest) {
+    reasons.push({
+      code: "all_closed_horizon",
+      detail: "no open shipping day within horizon after region offset",
+    });
+    return { earliest: null, selectable: [], reasons };
+  }
+
   const selectable: LocalDate[] = [];
   const window = input.settings.selectableWindowDays;
   for (let i = 0; i < window; i += 1) {

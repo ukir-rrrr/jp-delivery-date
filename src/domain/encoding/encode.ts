@@ -7,19 +7,19 @@ export interface EncodedCsv {
 
 /**
  * Encoding runs after a pre-flight JIS check. iconv-lite lands with W4.
- * Scaffold returns UTF-8 bytes so the pipeline type-checks.
+ * Only UTF-8 with BOM is implemented; Shift_JIS / CP932 must not return
+ * mislabeled UTF-8 bytes.
  */
 export function encodeCsv(
   csv: string,
   encoding: CarrierEncoding,
 ): EncodedCsv {
-  const encoder = new TextEncoder();
-  if (encoding === "utf8_bom") {
-    const body = encoder.encode(csv);
-    const bytes = new Uint8Array(3 + body.length);
-    bytes.set([0xef, 0xbb, 0xbf], 0);
-    bytes.set(body, 3);
-    return { bytes, encoding };
+  if (encoding !== "utf8_bom") {
+    throw new Error(`CSV encoding "${encoding}" is not implemented`);
   }
-  return { bytes: encoder.encode(csv), encoding };
+  const body = new TextEncoder().encode(csv);
+  const bytes = new Uint8Array(3 + body.length);
+  bytes.set([0xef, 0xbb, 0xbf], 0);
+  bytes.set(body, 3);
+  return { bytes, encoding };
 }

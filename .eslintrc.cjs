@@ -59,7 +59,7 @@ module.exports = {
       plugins: ["@typescript-eslint", "import"],
       parser: "@typescript-eslint/parser",
       settings: {
-        "import/internal-regex": "^~/",
+        "import/internal-regex": "^@domain/|^@infra/",
         "import/resolver": {
           node: {
             extensions: [".ts", ".tsx"],
@@ -83,6 +83,11 @@ module.exports = {
         "no-restricted-imports": [
           "error",
           {
+            paths: [
+              { name: "fs", message: "src/domain must stay pure: no Node I/O." },
+              { name: "path", message: "src/domain must stay pure: no Node I/O." },
+              { name: "crypto", message: "src/domain must stay pure: no Node I/O." },
+            ],
             patterns: [
               {
                 group: [
@@ -93,9 +98,12 @@ module.exports = {
                   "react-router",
                   "react",
                   "react-dom",
+                  "node:*",
+                  "**/infra/**",
+                  "**/app/**",
                 ],
                 message:
-                  "src/domain must stay pure: no Shopify, Prisma, React, or infra imports.",
+                  "src/domain must stay pure: no Shopify, Prisma, React, infra, or I/O imports.",
               },
             ],
           },

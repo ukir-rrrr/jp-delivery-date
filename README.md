@@ -33,9 +33,9 @@
 Node.js 22.15 以上。
 
 ```bash
-npm install
 cp .env.example .env
 # .env に SHOPIFY_API_KEY / SHOPIFY_API_SECRET / SHOPIFY_APP_URL を記入
+npm install
 npx prisma migrate dev
 ```
 

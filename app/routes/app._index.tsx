@@ -2,64 +2,17 @@ import { useEffect, useState } from "react";
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import {
+  detectThemeExtensions,
+  type ThemeExtensionState,
+} from "../theme-extensions.client";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
   return null;
 };
 
-type ExtensionStatus = "unknown" | "active" | "inactive";
-
-interface ThemeExtensionState {
-  cartBlock: ExtensionStatus;
-  cartEmbed: ExtensionStatus;
-}
-
-async function detectThemeExtensions(): Promise<ThemeExtensionState> {
-  const fallback: ThemeExtensionState = {
-    cartBlock: "unknown",
-    cartEmbed: "unknown",
-  };
-  try {
-    const shopifyGlobal = (
-      globalThis as {
-        shopify?: { app?: { extensions?: () => Promise<unknown> } };
-      }
-    ).shopify;
-    if (!shopifyGlobal?.app?.extensions) return fallback;
-    const result = await shopifyGlobal.app.extensions();
-    const list = Array.isArray(result)
-      ? result
-      : ((result as { data?: unknown[] } | null)?.data ?? []);
-    const statusOf = (handleFragment: string): ExtensionStatus => {
-      const match = list.find((item) => {
-        const handle = String(
-          (item as { handle?: string; type?: string })?.handle ??
-            (item as { type?: string })?.type ??
-            "",
-        );
-        return handle.includes(handleFragment);
-      });
-      if (!match) return "inactive";
-      const activations = (match as { activations?: { status?: string }[] })
-        .activations;
-      const active = activations?.some((a) => a.status === "active");
-      if (active) return "active";
-      const topStatus = (match as { status?: string }).status;
-      if (topStatus === "active") return "active";
-      if (topStatus === "available" || topStatus === "inactive") return "inactive";
-      return "inactive";
-    };
-    return {
-      cartBlock: statusOf("cart-delivery"),
-      cartEmbed: statusOf("cart-drawer"),
-    };
-  } catch {
-    return fallback;
-  }
-}
-
-function statusLabel(status: ExtensionStatus): string {
+function statusLabel(status: ThemeExtensionState["cartBlock"]): string {
   switch (status) {
     case "active":
       return "有効";

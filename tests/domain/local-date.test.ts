@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addCalendarDays,
   parseLocalDate,
-} from "../../src/domain/calendar/local-date";
+} from "@domain/calendar/local-date";
 
 describe("parseLocalDate", () => {
   it("accepts a valid JST calendar date", () => {

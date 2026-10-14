@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
-import { carrierById } from "../../src/domain/carriers";
+import { carrierById } from "@domain/carriers";
 
 /**
  * Resource route: streams a shipping-label CSV. Customer name/address/phone
