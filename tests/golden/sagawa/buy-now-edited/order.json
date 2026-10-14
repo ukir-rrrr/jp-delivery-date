@@ -1,0 +1,35 @@
+{
+  "sender": {
+    "name": "山田商店",
+    "postalCode": "1000001",
+    "prefecture": "東京都",
+    "address1": "千代田区丸の内1-1",
+    "address2": "商店ビル",
+    "phone": "03-1234-5678",
+    "yamatoBillingCode": "123456789012",
+    "yamatoFreightNumber": "01"
+  },
+  "order": {
+    "orderId": "gid://shopify/Order/1005",
+    "orderName": "#1005",
+    "name": "佐藤花",
+    "phone": "080-0000-1111",
+    "address": {
+      "postalCode": "5300001",
+      "province": "大阪府",
+      "city": "大阪市北区",
+      "address1": "梅田1-1",
+      "address2": ""
+    },
+    "deliveryDate": "2026-10-18",
+    "slot": "evening",
+    "shipDate": "2026-10-14",
+    "lineItems": [
+      "菓子"
+    ],
+    "lineItemsTruncated": false,
+    "missingDeliveryPreference": false,
+    "pcdRedacted": false,
+    "needsReview": false
+  }
+}

@@ -19,11 +19,15 @@ function toHalfWidth(char: string): string {
   return String.fromCharCode(char.charCodeAt(0) - 0xfee0);
 }
 
-/** Half-width digits and hyphens, at most 15 characters (B2 phone columns). */
-export function normalizePhone(value: string): { value: string; ok: boolean } {
+/**
+ * Half-width digits and hyphens, at most `maxChars` characters.
+ * The default is the B2 phone column (15). Sagawa's phone columns are 14
+ * and Yu-Print R's are 20.
+ */
+export function normalizePhone(value: string, maxChars = 15): { value: string; ok: boolean } {
   const half = normalizeCsvText(value).replaceAll(" ", "");
   if (half === "") return { value: "", ok: false };
-  return { value: half, ok: /^[0-9-]{1,15}$/.test(half) };
+  return { value: half, ok: /^[0-9-]+$/.test(half) && half.length <= maxChars };
 }
 
 /**

@@ -41,6 +41,7 @@ describe("Yamato B2 columns", () => {
     expect(yamatoColumn("recipientAddress").maxBytes).toBe(64);
     expect(yamatoColumn("recipientBuilding").maxBytes).toBe(32);
     expect(yamatoAdapter.encoding).toBe("shift_jis");
+    expect(yamatoAdapter.encodingVerified).toBe(false);
     expect(yamatoAdapter.mapSlot("morning")).toBe("0812");
     expect(yamatoAdapter.mapSlot("afternoon_early")).toBe("1416");
     expect(yamatoAdapter.mapSlot("afternoon_late")).toBe("1618");

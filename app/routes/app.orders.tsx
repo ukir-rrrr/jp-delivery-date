@@ -3,11 +3,12 @@ import { useLoaderData } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { jstDateTime } from "@domain/calendar/jst";
 import { parseLocalDate, type LocalDate } from "@domain/calendar/local-date";
-import { yamatoPreview, yamatoRow } from "@domain/carriers/yamato";
+import { reviewOrder } from "@domain/carriers";
 import { orderMatchesFilter, parseOrderListStatus } from "@domain/order/list-filter";
 import { normalizeDeliveryOrder } from "@domain/order/normalize-order";
 import { AdminApiError, loadSettings } from "@infra/graphql/admin";
 import { fetchOrderPage, orderToInput } from "@infra/orders/load-orders";
+import { exportCarrier } from "../export-carriers";
 import { exportedOrderIds } from "../export-log.server";
 import { orderNumericId } from "../export-request";
 import { OrdersScreen, type OrdersScreenRow } from "../orders-screen";
@@ -36,6 +37,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const loaded = await loadSettings(admin);
   if (!loaded.ok) return loaded;
 
+  const chosen = exportCarrier(url.searchParams.get("carrier"));
   const status = parseOrderListStatus(url.searchParams.get("status"));
   const missingDate = url.searchParams.get("missing") === "1";
   let deliveryDate: LocalDate | null = null;
@@ -61,16 +63,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const exported = await exportedOrderIds(
     session.shop,
-    "yamato",
+    chosen.carrier.id,
     page.nodes.map((node) => node.id),
   );
   const listed = page.nodes.map((node) => {
     const order = normalizeDeliveryOrder(orderToInput(node, shipDate));
-    const view = yamatoRow(order, loaded.settings);
+    const view = reviewOrder(chosen.carrier.id, order, loaded.settings);
     return {
       order,
-      issues: view.issues,
-      preview: yamatoPreview(view.cells),
+      issues: view?.issues ?? [],
+      preview: view?.preview ?? [],
       fulfillmentStatus: node.displayFulfillmentStatus,
       exported: exported.has(node.id),
     };
@@ -109,6 +111,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     ok: true as const,
     settingsStatus: loaded.status,
     billingReady: Boolean(loaded.settings.sender.yamatoBillingCode && loaded.settings.sender.yamatoFreightNumber),
+    carrier: {
+      id: chosen.carrier.id,
+      label: chosen.carrier.label,
+      button: chosen.carrier.button,
+      note: chosen.carrier.note,
+    },
+    carrierError: chosen.error,
     dateError,
     justExported: url.searchParams.get("exported") === "1",
     filter: {
