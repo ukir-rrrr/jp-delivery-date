@@ -1,0 +1,22 @@
+<div
+  class="jp-delivery-date-embed"
+  data-jp-delivery-embed
+  data-cart-drawer-selector="{{ block.settings.cart_drawer_selector | escape }}"
+></div>
+
+{% schema %}
+{
+  "name": "t:block.cart_drawer_embed.name",
+  "target": "body",
+  "javascript": "delivery-engine.js",
+  "settings": [
+    {
+      "type": "text",
+      "id": "cart_drawer_selector",
+      "label": "t:block.cart_drawer_embed.selector",
+      "info": "t:block.cart_drawer_embed.selector_info",
+      "default": "cart-drawer"
+    }
+  ]
+}
+{% endschema %}

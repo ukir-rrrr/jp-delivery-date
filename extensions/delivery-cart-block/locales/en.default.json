@@ -1,0 +1,9 @@
+{
+  "delivery": {
+    "date_label": "Preferred delivery date",
+    "placeholder": "Select a date",
+    "slot_label": "Preferred time slot",
+    "slot_placeholder": "Select a time slot",
+    "scaffold_note": "Date options will appear after the merchant finishes setup."
+  }
+}

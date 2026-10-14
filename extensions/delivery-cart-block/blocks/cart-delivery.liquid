@@ -1,0 +1,35 @@
+<div class="jp-delivery-date" data-jp-delivery-block>
+  <p>
+    <label for="jp-delivery-date">{{ 'delivery.date_label' | t }}</label>
+    <select
+      id="jp-delivery-date"
+      name="attributes[_delivery_date]"
+      disabled
+    >
+      <option value="">{{ 'delivery.placeholder' | t }}</option>
+    </select>
+  </p>
+  <p>
+    <label for="jp-delivery-slot">{{ 'delivery.slot_label' | t }}</label>
+    <select
+      id="jp-delivery-slot"
+      name="attributes[_delivery_slot]"
+      disabled
+    >
+      <option value="">{{ 'delivery.slot_placeholder' | t }}</option>
+    </select>
+  </p>
+  <p class="jp-delivery-date__note">{{ 'delivery.scaffold_note' | t }}</p>
+</div>
+
+{% schema %}
+{
+  "name": "t:block.cart_delivery.name",
+  "target": "section",
+  "javascript": "delivery-engine.js",
+  "enabled_on": {
+    "templates": ["cart"]
+  },
+  "settings": []
+}
+{% endschema %}
