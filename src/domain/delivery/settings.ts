@@ -9,6 +9,10 @@ export interface SenderProfile {
   address1?: string;
   address2?: string;
   phone?: string;
+  /** Yamato B2 ご請求先顧客コード. Merchant account data, not buyer PII. */
+  yamatoBillingCode?: string;
+  /** Yamato B2 運賃管理番号. Merchant account data, not buyer PII. */
+  yamatoFreightNumber?: string;
 }
 
 export interface SettingsV1 {
@@ -99,7 +103,16 @@ function readSender(raw: unknown): SettingsV1["sender"] | null {
   if (raw === undefined) return {};
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const sender: SettingsV1["sender"] = {};
-  for (const key of ["name", "postalCode", "prefecture", "address1", "address2", "phone"] as const) {
+  for (const key of [
+    "name",
+    "postalCode",
+    "prefecture",
+    "address1",
+    "address2",
+    "phone",
+    "yamatoBillingCode",
+    "yamatoFreightNumber",
+  ] as const) {
     const field = (raw as Record<string, unknown>)[key];
     if (field === undefined) continue;
     if (typeof field !== "string") return null;

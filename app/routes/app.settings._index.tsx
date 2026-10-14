@@ -311,6 +311,20 @@ function SenderFields({
         defaultValue={sender.phone ?? ""}
         error={fieldErrors.senderPhone}
       />
+      <s-text-field
+        label="ヤマト ご請求先顧客コード"
+        name="senderYamatoBillingCode"
+        defaultValue={sender.yamatoBillingCode ?? ""}
+        details="B2クラウドの請求先顧客コードです。半角数字、最大12桁。店舗の契約番号で、購入者の情報ではありません。"
+        error={fieldErrors.senderYamatoBillingCode}
+      />
+      <s-text-field
+        label="ヤマト 運賃管理番号"
+        name="senderYamatoFreightNumber"
+        defaultValue={sender.yamatoFreightNumber ?? ""}
+        details="半角数字、最大2桁。発払いの送り状に必要です。"
+        error={fieldErrors.senderYamatoFreightNumber}
+      />
     </>
   );
 }

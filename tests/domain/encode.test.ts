@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 import { encodeCsv } from "@domain/encoding/encode";
 
 describe("encodeCsv", () => {
-  it("throws for unimplemented Shift_JIS instead of returning UTF-8", () => {
-    expect(() => encodeCsv("送り状", "shift_jis")).toThrow(/not implemented/);
+  it("writes Shift_JIS bytes and refuses characters outside JIS X 0208", () => {
+    const { bytes, encoding } = encodeCsv("あ\r\n", "shift_jis");
+    expect(encoding).toBe("shift_jis");
+    expect([...bytes]).toEqual([0x82, 0xa0, 0x0d, 0x0a]);
+    expect(() => encodeCsv("髙", "shift_jis")).toThrow(/JIS X 0208/);
+    expect(() => encodeCsv("①", "shift_jis")).toThrow(/JIS X 0208/);
   });
 
   it("writes a UTF-8 BOM for utf8_bom", () => {

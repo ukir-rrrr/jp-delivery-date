@@ -1,3 +1,5 @@
+import { isJisX0208OrX0201 } from "../encoding/jis";
+
 export interface JisIssue {
   char: string;
   index: number;
@@ -5,9 +7,9 @@ export interface JisIssue {
 }
 
 /**
- * Characters outside JIS X 0208 (髙, 﨑, ①, emoji) produce an issue.
- * Substitutions are applied only when the merchant confirms — never silently.
- * Scaffold heuristic: non-BMP code points plus a known gaiji set.
+ * Characters outside JIS X 0208 level 1/2 (and JIS X 0201, which the carrier
+ * layouts allow as 半角) produce an issue. Substitutions are suggestions
+ * only — callers must not apply them unless the merchant confirms.
  */
 export function jisCheck(
   value: string,
@@ -16,8 +18,7 @@ export function jisCheck(
   const issues: JisIssue[] = [];
   let index = 0;
   for (const char of value) {
-    const code = char.codePointAt(0) ?? 0;
-    if (code > 0xffff || "髙﨑①".includes(char)) {
+    if (!isJisX0208OrX0201(char)) {
       issues.push({
         char,
         index,

@@ -1,0 +1,33 @@
+{
+  "sender": {
+    "name": "山田商店",
+    "postalCode": "1000001",
+    "prefecture": "東京都",
+    "address1": "千代田区丸の内1-1",
+    "address2": "商店ビル",
+    "phone": "03-1234-5678",
+    "yamatoBillingCode": "123456789012",
+    "yamatoFreightNumber": "01"
+  },
+  "order": {
+    "orderId": "gid://shopify/Order/1003",
+    "orderName": "#1003",
+    "name": "海野花",
+    "phone": "098-123-4567",
+    "address": {
+      "postalCode": "9000015",
+      "province": "沖縄県",
+      "city": "那覇市",
+      "address1": "久茂地1-1",
+      "address2": "港ビル"
+    },
+    "deliveryDate": "2026-10-21",
+    "slot": "night",
+    "shipDate": "2026-10-14",
+    "lineItems": ["沖縄茶"],
+    "lineItemsTruncated": false,
+    "missingDeliveryPreference": false,
+    "pcdRedacted": false,
+    "needsReview": false
+  }
+}

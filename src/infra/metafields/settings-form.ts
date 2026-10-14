@@ -36,6 +36,8 @@ const settingsFormSchema = z
     senderAddress1: z.string(),
     senderAddress2: z.string(),
     senderPhone: z.string(),
+    senderYamatoBillingCode: z.string(),
+    senderYamatoFreightNumber: z.string(),
   })
   .strict()
   .superRefine((value, ctx) => {
@@ -118,6 +120,8 @@ const settingsFormSchema = z
       "senderAddress1",
       "senderAddress2",
       "senderPhone",
+      "senderYamatoBillingCode",
+      "senderYamatoFreightNumber",
     ] as const) {
       if (value[key].length > MAX_TEXT) {
         ctx.addIssue({
@@ -136,6 +140,8 @@ const settingsFormSchema = z
     if (value.senderAddress1) sender.address1 = value.senderAddress1;
     if (value.senderAddress2) sender.address2 = value.senderAddress2;
     if (value.senderPhone) sender.phone = value.senderPhone;
+    if (value.senderYamatoBillingCode) sender.yamatoBillingCode = value.senderYamatoBillingCode;
+    if (value.senderYamatoFreightNumber) sender.yamatoFreightNumber = value.senderYamatoFreightNumber;
 
     const prefectureLeadDays: Record<string, number> = {};
     for (const [code, raw] of Object.entries(value.prefectureDays)) {
@@ -179,6 +185,8 @@ export function settingsFromForm(form: FormData): SettingsFormResult {
     senderAddress1: text(form.get("senderAddress1")),
     senderAddress2: text(form.get("senderAddress2")),
     senderPhone: text(form.get("senderPhone")),
+    senderYamatoBillingCode: text(form.get("senderYamatoBillingCode")),
+    senderYamatoFreightNumber: text(form.get("senderYamatoFreightNumber")),
   });
   if (!parsed.success) {
     return { ok: false, formError: null, fieldErrors: fieldErrorsOf(parsed.error) };
