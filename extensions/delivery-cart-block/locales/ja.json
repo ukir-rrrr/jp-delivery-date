@@ -1,0 +1,9 @@
+{
+  "delivery": {
+    "date_label": "配達希望日",
+    "placeholder": "日付を選択",
+    "slot_label": "配達時間帯",
+    "slot_placeholder": "時間帯を選択",
+    "scaffold_note": "設定完了後に選択できる日付が表示されます。"
+  }
+}

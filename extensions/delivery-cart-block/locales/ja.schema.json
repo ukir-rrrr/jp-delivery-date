@@ -1,0 +1,12 @@
+{
+  "block": {
+    "cart_delivery": {
+      "name": "配達日時指定"
+    },
+    "cart_drawer_embed": {
+      "name": "配達日時指定（カートドロワー）",
+      "selector": "カートドロワーのCSSセレクタ",
+      "selector_info": "Dawn の初期値は cart-drawer です。テーマに合わせて変更してください。"
+    }
+  }
+}

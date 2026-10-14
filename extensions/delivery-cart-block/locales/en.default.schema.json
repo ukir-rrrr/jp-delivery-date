@@ -1,0 +1,12 @@
+{
+  "block": {
+    "cart_delivery": {
+      "name": "Delivery date"
+    },
+    "cart_drawer_embed": {
+      "name": "Delivery date (cart drawer)",
+      "selector": "Cart drawer CSS selector",
+      "selector_info": "Dawn preset: cart-drawer. Change this if your theme uses a different drawer."
+    }
+  }
+}
