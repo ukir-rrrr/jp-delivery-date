@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { loadSettings } from "@infra/graphql/admin";
 import {
   detectThemeExtensions,
   type ThemeExtensionState,
 } from "../theme-extensions.client";
 
+export type SetupSettingsStatus = "ok" | "missing" | "invalid" | "unknown";
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
-  return null;
+  const { admin } = await authenticate.admin(request);
+  const loaded = await loadSettings(admin);
+  const settingsStatus: SetupSettingsStatus = loaded.ok ? loaded.status : "unknown";
+  return { settingsStatus };
 };
 
 function statusLabel(status: ThemeExtensionState["cartBlock"]): string {
@@ -23,7 +29,21 @@ function statusLabel(status: ThemeExtensionState["cartBlock"]): string {
   }
 }
 
+function settingsStatusLabel(status: SetupSettingsStatus): string {
+  switch (status) {
+    case "ok":
+      return "保存済み";
+    case "missing":
+      return "未保存（初期値）";
+    case "invalid":
+      return "保存済みの設定を読み取れません";
+    default:
+      return "未確認";
+  }
+}
+
 export default function Index() {
+  const { settingsStatus } = useLoaderData<typeof loader>();
   const [extensions, setExtensions] = useState<ThemeExtensionState>({
     cartBlock: "unknown",
     cartEmbed: "unknown",
@@ -82,9 +102,13 @@ export default function Index() {
 
             <s-heading>3. カレンダーと送り主を設定</s-heading>
             <s-paragraph>
+              ステータス: {settingsStatusLabel(settingsStatus)}
+            </s-paragraph>
+            <s-paragraph>
               <s-link href="/app/settings">設定</s-link>
-              で休業日・年始（12/29–1/3）・カットオフ時刻・リードタイム・都道府県日数・送り主を保存します。
-              保存後、カートの日付候補に反映されます。
+              で休業日・年始（12/29–1/3）・出荷できない曜日・カットオフ・時間帯・都道府県の加算日数・送り主を保存します。
+              <s-link href="/app/settings/products">商品リードタイム</s-link>
+              は商品ごとの出荷営業日です。保存後、カートの日付候補に反映されます。
             </s-paragraph>
           </s-stack>
         </s-box>

@@ -18,8 +18,13 @@ export default function App() {
   return (
     <AppProvider apiKey={apiKey}>
       <s-app-nav>
-        <s-link href="/app">ホーム</s-link>
+        {/* Polaris s-link props omit rel. App Bridge uses rel="home" so the app name opens /app. */}
+        {/* @ts-expect-error App Bridge reads rel="home"; the Polaris s-link type does not declare it. */}
+        <s-link href="/app" rel="home">
+          ホーム
+        </s-link>
         <s-link href="/app/settings">設定</s-link>
+        <s-link href="/app/settings/products">商品リードタイム</s-link>
         <s-link href="/app/orders">送り状CSV</s-link>
       </s-app-nav>
       <Outlet />

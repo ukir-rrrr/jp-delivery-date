@@ -93,4 +93,4 @@ docs/architecture.md   承認済みアーキテクチャ
 
 ## スコープ
 
-`read_orders` と `read_products`。`read_all_orders` は要求しません。アプリ所有の商品メタフィールド書き込みに `write_products` が要るかは未検証です。
+`read_orders`、`read_products`、`write_products`。`read_all_orders` は要求しません。商品メタフィールドの保存には `write_products` が必要です。
