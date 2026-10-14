@@ -1,14 +1,25 @@
-<div
-  class="jp-delivery-date-embed"
-  data-jp-delivery-embed
+{% comment %}
+  App embed. The picker stays in a template until the storefront script
+  mounts it inside the merchant's cart drawer. Dawn's preset selector is
+  the cart-drawer element. No theme code is edited.
+{% endcomment %}
+<template
+  data-jp-delivery-template
   data-cart-drawer-selector="{{ block.settings.cart_drawer_selector | escape }}"
-></div>
+>
+  {% render 'delivery-picker',
+    mode: 'embed',
+    required: block.settings.required,
+    show_prefecture: block.settings.show_prefecture
+  %}
+</template>
 
 {% schema %}
 {
   "name": "t:block.cart_drawer_embed.name",
   "target": "body",
   "javascript": "delivery-engine.js",
+  "stylesheet": "delivery.css",
   "settings": [
     {
       "type": "text",
@@ -16,6 +27,20 @@
       "label": "t:block.cart_drawer_embed.selector",
       "info": "t:block.cart_drawer_embed.selector_info",
       "default": "cart-drawer"
+    },
+    {
+      "type": "checkbox",
+      "id": "required",
+      "label": "t:block.cart_delivery.required",
+      "info": "t:block.cart_delivery.required_info",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_prefecture",
+      "label": "t:block.cart_delivery.show_prefecture",
+      "info": "t:block.cart_delivery.show_prefecture_info",
+      "default": false
     }
   ]
 }

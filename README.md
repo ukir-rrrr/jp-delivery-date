@@ -6,15 +6,26 @@
 
 承認済み設計は [docs/architecture.md](docs/architecture.md) です。
 
-## 現在の状態（W1 スキャフォールド）
+## 現在の状態（W2: 最短日とカート）
 
-公式の [React Router アプリテンプレート](https://github.com/Shopify/shopify-app-template-react-router)（TypeScript、Prisma セッション）を土台に、ディレクトリと画面の骨格だけを置いています。最短日エンジンの本実装、カートブロックの動作、設定の保存、実CSVは以降の週です。
+最短日エンジン（`src/domain/delivery/earliest-date.ts`）と、テーマアプリ拡張のカートブロック / カートドロワー埋め込みが入っています。エンジンは `now` を外から受け取る純関数で、`reasons[]` に計算過程を返します。ストアフロントの `delivery-engine.js` は同じモジュールを Vite で束ねたものです。
+
+計算順は次のとおりです。
+
+1. カットオフ（JST）。その時刻以降は翌日から出荷を数える
+2. カート内商品のリードタイムの最大値（出荷営業日）
+3. 都道府県ごとの加算（暦日）。都道府県が不明なら、設定された地域日数の最大
+4. 休業曜日・祝日・年始（12/29–1/3）に当たった配達日は、次の出荷できる日へ進める
+
+設定の保存、注文一覧、実CSVはまだです。設定メタフィールドが無いあいだ、カートは初期値（日曜休み、カットオフ 15:00、年始プリセット、地域 2 日）で計算します。
 
 ## 既知の制限: Buy Now / エクスプレス決済
 
-**「今すぐ購入」や Shop Pay などのエクスプレス決済はカートを経由しません。** そのため配達希望日・時間帯は保存されません。送り状CSVでは「日時指定なし」になり、書き出し前に行内で日付・時間帯を入力する必要があります（入力はメモリ上のみで、注文には書き戻しません）。
+**「今すぐ購入」や Shop Pay などのエクスプレス決済はカートを経由しません。** カートブロックもドロワー埋め込みも、これらのボタンには届きません。配達希望日・時間帯は保存されず、送り状CSVでは「日時指定なし」になります。書き出し前に行内で日付・時間帯を入力します（入力はメモリ上のみで、注文には書き戻しません）。
 
-テーマ側のダイナミックチェックアウトボタンを非表示にすると、通常のカート経由に誘導できます。
+商品ページにブロックを置いて line item properties で受ける方式は、ダイナミックチェックアウトボタンがそれを残すか未検証のため入れていません。
+
+テーマ側のダイナミックチェックアウトボタンを非表示にすると、通常のカート経由に誘導できます。テーマエディタでブロックを開くと、同じ注意が表示されます。
 
 ## 必要なもの（人が用意）
 
@@ -57,7 +68,8 @@ npm run dev
 | `npm run typecheck` | React Router の型生成 + `tsc` |
 | `npm run lint` | ESLint |
 | `npm test` | Vitest（ドメインの単体テスト） |
-| `npm run build` | 本番ビルド |
+| `npm run build` | 拡張のエンジン束ね + 本番ビルド |
+| `npm run build:extension` | カート拡張の `delivery-engine.js` だけ再生成 |
 
 ## ディレクトリ
 
@@ -65,7 +77,8 @@ npm run dev
 app/routes/            管理画面（セットアップ / 設定 / CSV / エクスポート）と webhook
 src/domain/            純ドメイン（Shopify / Prisma / IO 禁止）
   calendar/            LocalDate（JST YYYY-MM-DD）、営業日カレンダー
-  delivery/            時間帯、47都道府県、earliestDate()
+  delivery/            時間帯、47都道府県、earliestDate()、選択の検証
+src/storefront/        カートUIの純関数（日付候補と cart attributes）
   order/               NormalizedOrder、note attributes のパース
   address/             住所分割、JIS チェック
   carriers/            Yamato / Sagawa / Yu-Print R アダプタ

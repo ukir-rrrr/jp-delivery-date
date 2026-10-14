@@ -1,4 +1,11 @@
 import { parseLocalDate, type LocalDate } from "../calendar/local-date";
+import {
+  ATTR_DATE_KEY,
+  ATTR_DATE_LABEL,
+  ATTR_SLOT_KEY,
+  ATTR_SLOT_LABEL,
+} from "../delivery/attributes";
+import { slotFromLabel } from "../delivery/labels";
 import { isSlot, type Slot } from "../delivery/slot";
 import type { NormalizedOrder } from "./normalized-order";
 
@@ -7,11 +14,29 @@ export interface NoteAttribute {
   value: string | null;
 }
 
-export const ATTR_DATE_LABEL = "配達希望日";
-export const ATTR_SLOT_LABEL = "配達時間帯";
-export const ATTR_DATE_KEY = "_delivery_date";
-export const ATTR_SLOT_KEY = "_delivery_slot";
-export const ATTR_VERSION_KEY = "_delivery_v";
+export {
+  ATTR_DATE_LABEL,
+  ATTR_SLOT_LABEL,
+  ATTR_DATE_KEY,
+  ATTR_SLOT_KEY,
+  ATTR_VERSION_KEY,
+} from "../delivery/attributes";
+
+function parseDateValue(raw: string): LocalDate | null {
+  const normalized = raw.trim().replaceAll("/", "-");
+  try {
+    return parseLocalDate(normalized);
+  } catch {
+    return null;
+  }
+}
+
+function parseSlotValue(raw: string | undefined): Slot {
+  if (!raw) return "unspecified";
+  const trimmed = raw.trim();
+  if (isSlot(trimmed)) return trimmed;
+  return slotFromLabel(trimmed) ?? "unspecified";
+}
 
 function attrMap(attrs: readonly NoteAttribute[]): Map<string, string> {
   const map = new Map<string, string>();
@@ -34,14 +59,10 @@ export function parseDeliveryChoice(attrs: readonly NoteAttribute[]): {
 
   let date: LocalDate | null = null;
   if (rawDate) {
-    try {
-      date = parseLocalDate(rawDate);
-    } catch {
-      date = null;
-    }
+    date = parseDateValue(rawDate);
   }
 
-  const slot: Slot = rawSlot && isSlot(rawSlot) ? rawSlot : "unspecified";
+  const slot = parseSlotValue(rawSlot);
   const missing = date === null && slot === "unspecified";
   return { date, slot, missing };
 }

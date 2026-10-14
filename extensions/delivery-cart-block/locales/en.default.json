@@ -4,6 +4,14 @@
     "placeholder": "Select a date",
     "slot_label": "Preferred time slot",
     "slot_placeholder": "Select a time slot",
-    "scaffold_note": "Date options will appear after the merchant finishes setup."
+    "prefecture_label": "Delivery prefecture",
+    "prefecture_placeholder": "Not selected (slowest region)",
+    "error_settings": "Delivery dates cannot be calculated. Check the app settings.",
+    "error_lead": "A product lead time is missing, so dates cannot be shown.",
+    "error_empty": "No delivery dates are available.",
+    "error_required": "Select a delivery date.",
+    "error_slot": "Select a time slot.",
+    "error_date": "That date is not available. Choose another date.",
+    "buy_now_limitation": "Buy Now and express wallets skip the cart, so this block cannot save a delivery date for them. Hide the theme's dynamic checkout buttons to send shoppers through the cart."
   }
 }

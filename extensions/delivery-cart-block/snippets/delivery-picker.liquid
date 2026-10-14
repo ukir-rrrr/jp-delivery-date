@@ -1,0 +1,74 @@
+{% comment %}
+  Shared picker for the cart block and the cart-drawer embed.
+  No theme files are edited. Buy Now / dynamic checkout never renders this
+  picker: those buttons skip the cart, so no delivery attributes are saved.
+{% endcomment %}
+{% liquid
+  assign delivery_settings = app.metafields.settings_v1.value
+%}
+
+<div
+  class="jp-delivery"
+  data-jp-delivery
+  data-mode="{{ mode }}"
+  data-required="{% if required %}true{% else %}false{% endif %}"
+  data-show-prefecture="{% if show_prefecture %}true{% else %}false{% endif %}"
+  data-locale="{{ request.locale.iso_code }}"
+  data-msg-settings="{{ 'delivery.error_settings' | t | escape }}"
+  data-msg-lead="{{ 'delivery.error_lead' | t | escape }}"
+  data-msg-empty="{{ 'delivery.error_empty' | t | escape }}"
+  data-msg-required="{{ 'delivery.error_required' | t | escape }}"
+  data-msg-slot="{{ 'delivery.error_slot' | t | escape }}"
+  data-msg-date="{{ 'delivery.error_date' | t | escape }}"
+>
+  <script type="application/json" data-jp-delivery-settings>
+    {% if delivery_settings != blank %}{{ delivery_settings | json }}{% else %}null{% endif %}
+  </script>
+  <script type="application/json" data-jp-delivery-items>
+    [
+      {%- for item in cart.items -%}
+        {%- liquid
+          assign lead = item.product.metafields.app.lead_time_days.value
+          if lead == blank
+            assign lead = 0
+          endif
+        -%}
+        {"productId":{{ item.product_id | json }},"leadTimeDays":{{ lead | json }}}
+        {%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
+
+  {% if request.design_mode %}
+    <p class="jp-delivery__editor-note">{{ 'delivery.buy_now_limitation' | t }}</p>
+  {% endif %}
+
+  <label class="jp-delivery__field">
+    <span>{{ 'delivery.date_label' | t }}</span>
+    <select data-jp-delivery-date disabled>
+      <option value="">{{ 'delivery.placeholder' | t }}</option>
+    </select>
+  </label>
+
+  <div
+    class="jp-delivery__field"
+    data-jp-delivery-prefecture-field
+    {% unless show_prefecture %}hidden{% endunless %}
+  >
+    <label>
+      <span>{{ 'delivery.prefecture_label' | t }}</span>
+      <select data-jp-delivery-prefecture disabled>
+        <option value="">{{ 'delivery.prefecture_placeholder' | t }}</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="jp-delivery__field">
+    <span>{{ 'delivery.slot_label' | t }}</span>
+    <select data-jp-delivery-slot disabled>
+      <option value="">{{ 'delivery.slot_placeholder' | t }}</option>
+    </select>
+  </label>
+
+  <p class="jp-delivery__error" data-jp-delivery-error role="alert" hidden></p>
+</div>
