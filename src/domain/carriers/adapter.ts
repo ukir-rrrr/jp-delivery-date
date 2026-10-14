@@ -27,7 +27,7 @@ export type Row = string[];
 
 export interface CarrierAdapter {
   id: string;
-  columns: ColumnSpec[];
+  columns: readonly ColumnSpec[];
   mapSlot(s: Slot): string | Issue;
   formatDate(d: LocalDate): string;
   toRow(o: NormalizedOrder, s: SettingsV1): Result<Row, Issue[]>;

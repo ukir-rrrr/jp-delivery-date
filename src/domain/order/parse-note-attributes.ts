@@ -73,11 +73,15 @@ export function emptyNormalizedOrder(
 ): NormalizedOrder {
   return {
     orderId,
+    orderName: "",
     name: "",
     phone: "",
     address: { postalCode: "", province: "", city: "", address1: "", address2: "" },
     deliveryDate: null,
     slot: "unspecified",
+    shipDate: null,
+    lineItems: [],
+    lineItemsTruncated: false,
     missingDeliveryPreference: true,
     pcdRedacted: false,
     needsReview: true,

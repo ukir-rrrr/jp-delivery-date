@@ -1,0 +1,33 @@
+{
+  "sender": {
+    "name": "山田商店",
+    "postalCode": "1000001",
+    "prefecture": "東京都",
+    "address1": "千代田区丸の内1-1",
+    "address2": "商店ビル",
+    "phone": "03-1234-5678",
+    "yamatoBillingCode": "123456789012",
+    "yamatoFreightNumber": "01"
+  },
+  "order": {
+    "orderId": "gid://shopify/Order/1004",
+    "orderName": "#1004",
+    "name": "山田太郎",
+    "phone": "090-1111-2222",
+    "address": {
+      "postalCode": "150-0001",
+      "province": "東京都",
+      "city": "渋谷区",
+      "address1": "神宮前1-2-3",
+      "address2": "サンプルマンション101"
+    },
+    "deliveryDate": "2026-10-20",
+    "slot": "afternoon_early",
+    "shipDate": "2026-10-14",
+    "lineItems": ["箱,\"大\""],
+    "lineItemsTruncated": false,
+    "missingDeliveryPreference": false,
+    "pcdRedacted": false,
+    "needsReview": false
+  }
+}
